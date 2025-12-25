@@ -66,17 +66,17 @@ case $option in
         sleep 5
         
         # Verificar health
-        if curl -s http://localhost:8080/health > /dev/null 2>&1; then
+        if curl -s http://localhost:8081/health > /dev/null 2>&1; then
             echo "✅ Proxy iniciado correctamente!"
             echo ""
-            echo "📍 El proxy está corriendo en: http://localhost:8080"
+            echo "📍 El proxy está corriendo en: http://localhost:8081"
             echo ""
             echo "Próximos pasos:"
             echo "  1. Ver documentación: cat README.md"
             echo "  2. Ejecutar demo: ./quick-start.sh (opción 2)"
             echo "  3. Crear tu primera configuración:"
             echo ""
-            echo "     curl -X POST http://localhost:8080/api/v1/configs \\"
+            echo "     curl -X POST http://localhost:8081/api/v1/configs \\"
             echo "       -H \"Content-Type: application/json\" \\"
             echo "       -d '{"
             echo "         \"name\": \"Mi Primera Config\","
@@ -97,7 +97,7 @@ case $option in
         echo ""
         
         # Verificar que el proxy esté corriendo
-        if ! curl -s http://localhost:8080/health > /dev/null 2>&1; then
+        if ! curl -s http://localhost:8081/health > /dev/null 2>&1; then
             echo "⚠️  El proxy no está corriendo."
             echo "Iniciándolo primero..."
             echo ""
@@ -145,13 +145,13 @@ case $option in
         echo "  $DOCKER_COMPOSE down"
         echo ""
         echo "# Health check"
-        echo "  curl http://localhost:8080/health"
+        echo "  curl http://localhost:8081/health"
         echo ""
         echo "# Listar configuraciones"
-        echo "  curl http://localhost:8080/api/v1/configs"
+        echo "  curl http://localhost:8081/api/v1/configs"
         echo ""
         echo "# Crear configuración"
-        echo "  curl -X POST http://localhost:8080/api/v1/configs \\"
+        echo "  curl -X POST http://localhost:8081/api/v1/configs \\"
         echo "    -H \"Content-Type: application/json\" \\"
         echo "    -d '{\"name\":\"Test\",\"target\":\"https://api.example.com\",\"rules\":{}}'"
         echo ""

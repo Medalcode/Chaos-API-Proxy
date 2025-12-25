@@ -53,7 +53,7 @@ cd chaos-api-proxy
 docker-compose up -d
 
 # 3. Verificar que está corriendo
-curl http://localhost:8080/health
+curl http://localhost:8081/health
 ```
 
 ### Desarrollo Local
@@ -74,7 +74,7 @@ make run
 ### 1. Crear una Configuración de Caos
 
 ```bash
-curl -X POST http://localhost:8080/api/v1/configs \
+curl -X POST http://localhost:8081/api/v1/configs \
   -H "Content-Type: application/json" \
   -d '{
     "name": "Stripe API Chaos Test",
@@ -116,15 +116,32 @@ fetch("https://api.stripe.com/v1/charges", {
 });
 ```
 
-Apunta al proxy con el config ID:
+Apunta al proxy (dos métodos disponibles):
+
+**Método 1: Path-Based (Recomendado)**
 
 ```javascript
-// ✅ Ahora (a través del proxy con caos)
-fetch("http://localhost:8080/proxy/abc123-def456-ghi789/v1/charges", {
+// ✅ Path-based: Config ID en la URL
+fetch("http://localhost:8081/proxy/abc123-def456-ghi789/v1/charges", {
   method: "POST",
   headers: { Authorization: "Bearer sk_test_..." },
 });
 ```
+
+**Método 2: Header-Based**
+
+```javascript
+// ✅ Header-based: Config ID en header
+fetch("http://localhost:8081/v1/charges", {
+  method: "POST",
+  headers: {
+    "X-Chaos-Config-ID": "abc123-def456-ghi789",
+    Authorization: "Bearer sk_test_...",
+  },
+});
+```
+
+> 📘 **Dual Routing Mode**: Ver [docs/DUAL_ROUTING.md](docs/DUAL_ROUTING.md) para más detalles sobre ambos métodos.
 
 El proxy:
 
@@ -137,18 +154,18 @@ El proxy:
 
 ```bash
 # Listar todas las configuraciones
-curl http://localhost:8080/api/v1/configs
+curl http://localhost:8081/api/v1/configs
 
 # Obtener una configuración específica
-curl http://localhost:8080/api/v1/configs/abc123-def456-ghi789
+curl http://localhost:8081/api/v1/configs/abc123-def456-ghi789
 
 # Actualizar configuración
-curl -X PUT http://localhost:8080/api/v1/configs/abc123-def456-ghi789 \
+curl -X PUT http://localhost:8081/api/v1/configs/abc123-def456-ghi789 \
   -H "Content-Type: application/json" \
   -d '{ "enabled": false }'
 
 # Eliminar configuración
-curl -X DELETE http://localhost:8080/api/v1/configs/abc123-def456-ghi789
+curl -X DELETE http://localhost:8081/api/v1/configs/abc123-def456-ghi789
 ```
 
 ## 🎛️ Matriz de Variables de Caos

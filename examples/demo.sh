@@ -2,7 +2,7 @@
 
 # Chaos API Proxy - Example Usage Script
 
-BASE_URL="http://localhost:8080"
+BASE_URL="http://localhost:8081"
 API_URL="${BASE_URL}/api/v1"
 
 echo "🌪️  Chaos API Proxy - Example Usage"

@@ -66,9 +66,20 @@ func main() {
 	api.HandleFunc("/configs/{id}", configHandler.UpdateConfig).Methods("PUT")
 	api.HandleFunc("/configs/{id}", configHandler.DeleteConfig).Methods("DELETE")
 
-	// Proxy endpoint - catches all other requests
-	// Format: /proxy/{config-id}/{path:.*}
+	// Alias endpoints for compatibility with original spec
+	router.HandleFunc("/rules", configHandler.CreateConfig).Methods("POST")
+	router.HandleFunc("/rules", configHandler.ListConfigs).Methods("GET")
+	router.HandleFunc("/rules/{id}", configHandler.GetConfig).Methods("GET")
+	router.HandleFunc("/rules/{id}", configHandler.UpdateConfig).Methods("PUT")
+	router.HandleFunc("/rules/{id}", configHandler.DeleteConfig).Methods("DELETE")
+
+	// Proxy endpoint - path-based routing
+	// Format: /proxy/{configID}/{path:.*}
 	router.PathPrefix("/proxy/{configID}").Handler(proxyHandler)
+
+	// Catchall for header-based routing (X-Chaos-Config-ID)
+	// This must be last to avoid conflicts
+	router.PathPrefix("/").Handler(proxyHandler)
 
 	// Create server
 	server := &http.Server{

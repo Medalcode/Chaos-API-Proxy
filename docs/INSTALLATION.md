@@ -55,7 +55,7 @@ docker compose ps
 docker compose logs -f chaos-proxy
 
 # 5. Probar health check
-curl http://localhost:8080/health
+curl http://localhost:8081/health
 ```
 
 ### Comandos Útiles
@@ -173,14 +173,14 @@ chaos-proxy:
 ### 1. Health Check
 
 ```bash
-curl http://localhost:8080/health
+curl http://localhost:8081/health
 # Esperado: {"status":"healthy"}
 ```
 
 ### 2. Crear una Configuración de Prueba
 
 ```bash
-curl -X POST http://localhost:8080/api/v1/configs \
+curl -X POST http://localhost:8081/api/v1/configs \
   -H "Content-Type: application/json" \
   -d '{
     "name": "Test Config",
@@ -219,7 +219,7 @@ server {
     ssl_certificate_key /path/to/key.pem;
 
     location / {
-        proxy_pass http://localhost:8080;
+        proxy_pass http://localhost:8081;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;

@@ -31,7 +31,7 @@ WORKDIR /app
 COPY --from=builder /build/chaos-api-proxy .
 
 # Expose port
-EXPOSE 8080
+EXPOSE 8081
 
 # Run the application
 CMD ["./chaos-api-proxy"]

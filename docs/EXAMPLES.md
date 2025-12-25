@@ -24,7 +24,7 @@
 https://api.stripe.com/v1/charges
 
 # URL Con Proxy
-http://localhost:8080/proxy/{CONFIG_ID}/v1/charges
+http://localhost:8081/proxy/{CONFIG_ID}/v1/charges
                               ↑
                         Tu Config ID
 ```
@@ -37,7 +37,7 @@ http://localhost:8080/proxy/{CONFIG_ID}/v1/charges
 
 ```bash
 # Crear configuración con latencia alta
-curl -X POST http://localhost:8080/api/v1/configs \
+curl -X POST http://localhost:8081/api/v1/configs \
   -H "Content-Type: application/json" \
   -d '{
     "name": "High Latency Test",
@@ -62,7 +62,7 @@ const fetchWithChaos = async () => {
   try {
     // Apuntar al proxy en lugar de la API real
     const response = await fetch(
-      `http://localhost:8080/proxy/${CONFIG_ID}/users`
+      `http://localhost:8081/proxy/${CONFIG_ID}/users`
     );
 
     // Tu app debería mostrar loading durante 2-4 segundos
@@ -82,7 +82,7 @@ const fetchWithChaos = async () => {
 
 ```bash
 # Configuración que falla el 50% de las veces
-curl -X POST http://localhost:8080/api/v1/configs \
+curl -X POST http://localhost:8081/api/v1/configs \
   -H "Content-Type: application/json" \
   -d '{
     "name": "Error Injection Test",
@@ -102,7 +102,7 @@ curl -X POST http://localhost:8080/api/v1/configs \
 // Hacer 10 peticiones y verificar manejo de errores
 for (let i = 0; i < 10; i++) {
   try {
-    const res = await fetch(`http://localhost:8080/proxy/${CONFIG_ID}/data`);
+    const res = await fetch(`http://localhost:8081/proxy/${CONFIG_ID}/data`);
     if (!res.ok) {
       console.log(`❌ Request ${i + 1}: Error ${res.status}`);
       // ¿Tu UI muestra el error correctamente?
@@ -122,7 +122,7 @@ for (let i = 0; i < 10; i++) {
 
 ```bash
 # Configuración que cierra conexiones aleatoriamente
-curl -X POST http://localhost:8080/api/v1/configs \
+curl -X POST http://localhost:8081/api/v1/configs \
   -H "Content-Type: application/json" \
   -d '{
     "name": "Connection Drop Test",
@@ -141,7 +141,7 @@ curl -X POST http://localhost:8080/api/v1/configs \
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: `http://localhost:8080/proxy/${CONFIG_ID}`,
+  baseURL: `http://localhost:8081/proxy/${CONFIG_ID}`,
   timeout: 3000, // 3 segundos
 });
 
@@ -164,7 +164,7 @@ try {
 **Problema**: ¿Tu app respeta headers de rate limiting?
 
 ```bash
-curl -X POST http://localhost:8080/api/v1/configs \
+curl -X POST http://localhost:8081/api/v1/configs \
   -H "Content-Type: application/json" \
   -d '{
     "name": "Rate Limit Simulation",
@@ -213,7 +213,7 @@ async function fetchWithRetry(url, options = {}, maxRetries = 3) {
 
 ```bash
 # Simular conexión 3G (100 KB/s)
-curl -X POST http://localhost:8080/api/v1/configs \
+curl -X POST http://localhost:8081/api/v1/configs \
   -H "Content-Type: application/json" \
   -d '{
     "name": "3G Speed Simulation",
@@ -232,7 +232,7 @@ curl -X POST http://localhost:8080/api/v1/configs \
 ```javascript
 async function downloadImage(url) {
   const response = await fetch(
-    `http://localhost:8080/proxy/${CONFIG_ID}${url}`
+    `http://localhost:8081/proxy/${CONFIG_ID}${url}`
   );
   const reader = response.body.getReader();
   const contentLength = response.headers.get("Content-Length");
@@ -279,7 +279,7 @@ function UserList() {
 
       try {
         const response = await fetch(
-          `http://localhost:8080/proxy/${CONFIG_ID}/users`
+          `http://localhost:8081/proxy/${CONFIG_ID}/users`
         );
 
         // Verificar header de chaos
@@ -345,7 +345,7 @@ export default {
 
     try {
       const response = await fetch(
-        `http://localhost:8080/proxy/${this.configId}/users`
+        `http://localhost:8081/proxy/${this.configId}/users`
       );
 
       if (!response.ok) {
@@ -423,7 +423,7 @@ app.get("/api/users", async (req, res) => {
   try {
     const data = await breaker.execute(async () => {
       const response = await axios.get(
-        `http://localhost:8080/proxy/${CONFIG_ID}/users`,
+        `http://localhost:8081/proxy/${CONFIG_ID}/users`,
         { timeout: 5000 }
       );
       return response.data;
@@ -450,7 +450,7 @@ from functools import wraps
 import time
 
 CONFIG_ID = "your-config-id"
-BASE_URL = f"http://localhost:8080/proxy/{CONFIG_ID}"
+BASE_URL = f"http://localhost:8081/proxy/{CONFIG_ID}"
 
 # Retry decorator con exponential backoff
 def retry_with_backoff(retries=3, backoff_in_seconds=1):
@@ -501,7 +501,7 @@ describe("API Resilience Tests", () => {
 
   beforeAll(async () => {
     // Crear configuración para tests
-    const response = await fetch("http://localhost:8080/api/v1/configs", {
+    const response = await fetch("http://localhost:8081/api/v1/configs", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -527,7 +527,7 @@ describe("API Resilience Tests", () => {
     for (let i = 0; i < iterations; i++) {
       try {
         const response = await fetch(
-          `http://localhost:8080/proxy/${configId}/posts/1`
+          `http://localhost:8081/proxy/${configId}/posts/1`
         );
 
         if (response.ok) {
@@ -589,7 +589,7 @@ describe("Chaos Testing", () => {
 ```javascript
 // Cambiar configuración on-the-fly para diferentes tests
 async function createTestConfig(rules) {
-  const response = await fetch("http://localhost:8080/api/v1/configs", {
+  const response = await fetch("http://localhost:8081/api/v1/configs", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -671,7 +671,7 @@ class ChaosMetrics {
 const metrics = new ChaosMetrics();
 
 for (let i = 0; i < 100; i++) {
-  await metrics.fetch(`http://localhost:8080/proxy/${CONFIG_ID}/data`);
+  await metrics.fetch(`http://localhost:8081/proxy/${CONFIG_ID}/data`);
 }
 
 console.log(metrics.getStats());

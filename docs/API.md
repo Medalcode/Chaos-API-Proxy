@@ -3,7 +3,7 @@
 ## Base URL
 
 ```
-http://localhost:8080
+http://localhost:8081
 ```
 
 ## Endpoints
@@ -68,7 +68,7 @@ Content-Type: application/json
 **Example Request**
 
 ```bash
-curl -X POST http://localhost:8080/api/v1/configs \
+curl -X POST http://localhost:8081/api/v1/configs \
   -H "Content-Type: application/json" \
   -d '{
     "name": "Stripe API Test",
@@ -134,7 +134,7 @@ Obtiene todas las configuraciones almacenadas.
 **Example Request**
 
 ```bash
-curl http://localhost:8080/api/v1/configs
+curl http://localhost:8081/api/v1/configs
 ```
 
 **Response** (`200 OK`)
@@ -180,7 +180,7 @@ Obtiene una configuración específica por ID.
 **Example Request**
 
 ```bash
-curl http://localhost:8080/api/v1/configs/550e8400-e29b-41d4-a716-446655440000
+curl http://localhost:8081/api/v1/configs/550e8400-e29b-41d4-a716-446655440000
 ```
 
 **Response** (`200 OK`)
@@ -240,7 +240,7 @@ Actualiza una configuración existente.
 **Example Request**
 
 ```bash
-curl -X PUT http://localhost:8080/api/v1/configs/550e8400-e29b-41d4-a716-446655440000 \
+curl -X PUT http://localhost:8081/api/v1/configs/550e8400-e29b-41d4-a716-446655440000 \
   -H "Content-Type: application/json" \
   -d '{
     "name": "Stripe API Test",
@@ -282,7 +282,7 @@ Elimina una configuración.
 **Example Request**
 
 ```bash
-curl -X DELETE http://localhost:8080/api/v1/configs/550e8400-e29b-41d4-a716-446655440000
+curl -X DELETE http://localhost:8081/api/v1/configs/550e8400-e29b-41d4-a716-446655440000
 ```
 
 **Response** (`200 OK`)
@@ -321,10 +321,10 @@ Proxy transparente con inyección de chaos. Acepta cualquier método HTTP (GET, 
 
 ```bash
 # GET request
-curl http://localhost:8080/proxy/550e8400-e29b-41d4-a716-446655440000/v1/charges
+curl http://localhost:8081/proxy/550e8400-e29b-41d4-a716-446655440000/v1/charges
 
 # POST request
-curl -X POST http://localhost:8080/proxy/550e8400-e29b-41d4-a716-446655440000/v1/charges \
+curl -X POST http://localhost:8081/proxy/550e8400-e29b-41d4-a716-446655440000/v1/charges \
   -H "Authorization: Bearer sk_test_..." \
   -H "Content-Type: application/json" \
   -d '{"amount": 1000, "currency": "usd"}'
@@ -334,13 +334,13 @@ curl -X POST http://localhost:8080/proxy/550e8400-e29b-41d4-a716-446655440000/v1
 
 ```
 Proxy URL:
-http://localhost:8080/proxy/{configID}/v1/charges
+http://localhost:8081/proxy/{configID}/v1/charges
 
 Se mapea a:
 {target}/v1/charges
 
 Ejemplo:
-http://localhost:8080/proxy/550e.../v1/charges
+http://localhost:8081/proxy/550e.../v1/charges
 → https://api.stripe.com/v1/charges
 ```
 

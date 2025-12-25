@@ -23,9 +23,9 @@ services:
       dockerfile: Dockerfile
     container_name: chaos-api-proxy
     ports:
-      - "8080:8080"
+      - "8081:8081"
     environment:
-      - PORT=8080
+      - PORT=8081
       - REDIS_ADDR=redis:6379
       - REDIS_PASSWORD=
       - REDIS_DB=0

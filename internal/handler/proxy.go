@@ -34,6 +34,16 @@ func NewProxyHandler(storage *storage.RedisStorage) *ProxyHandler {
 func (h *ProxyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	configID := vars["configID"]
+	
+	// Support for header-based config identification
+	// If configID is empty from path, try to get it from header
+	if configID == "" {
+		configID = r.Header.Get("X-Chaos-Config-ID")
+		if configID == "" {
+			http.Error(w, "Missing configuration ID. Use path /proxy/{configID}/... or header X-Chaos-Config-ID", http.StatusBadRequest)
+			return
+		}
+	}
 
 	// Get configuration
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
@@ -123,12 +133,17 @@ func (h *ProxyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	proxy.Director = func(req *http.Request) {
 		originalDirector(req)
 
-		// Remove the proxy prefix from path
+		// Remove the proxy prefix from path (only if path-based)
 		// Path format: /proxy/{configID}/actual/path
-		prefix := fmt.Sprintf("/proxy/%s", configID)
-		req.URL.Path = strings.TrimPrefix(r.URL.Path, prefix)
-		if req.URL.Path == "" {
-			req.URL.Path = "/"
+		if vars["configID"] != "" {
+			prefix := fmt.Sprintf("/proxy/%s", configID)
+			req.URL.Path = strings.TrimPrefix(r.URL.Path, prefix)
+			if req.URL.Path == "" {
+				req.URL.Path = "/"
+			}
+		} else {
+			// Header-based: use path as-is
+			req.URL.Path = r.URL.Path
 		}
 
 		// Apply header modifications

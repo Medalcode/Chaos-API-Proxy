@@ -15,7 +15,7 @@ type Config struct {
 
 // Load reads configuration from environment variables
 func Load() (*Config, error) {
-	port := 8080
+	port := 8081
 	if p := os.Getenv("PORT"); p != "" {
 		if parsed, err := strconv.Atoi(p); err == nil {
 			port = parsed
