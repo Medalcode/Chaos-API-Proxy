@@ -1,0 +1,10 @@
+{
+  "name": "Slow Download - 3G Speed",
+  "description": "Simula velocidad de descarga de conexión 3G (~100 KB/s)",
+  "target": "https://cdn.example.com",
+  "enabled": true,
+  "rules": {
+    "bandwidth_limit_kbps": 100,
+    "latency_ms": 200
+  }
+}

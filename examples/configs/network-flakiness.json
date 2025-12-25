@@ -1,0 +1,11 @@
+{
+  "name": "Network Flakiness",
+  "description": "Simula conexión inestable con drops aleatorios",
+  "target": "https://api.example.com",
+  "enabled": true,
+  "rules": {
+    "drop_connection_rate": 0.05,
+    "latency_ms": 300,
+    "jitter": 500
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "name": "Stripe API - High Latency Test",
+  "description": "Simula latencia alta y variable para probar timeouts del frontend",
+  "target": "https://api.stripe.com",
+  "enabled": true,
+  "rules": {
+    "latency_ms": 2000,
+    "jitter": 1000
+  }
+}
