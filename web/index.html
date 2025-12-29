@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chaos Proxy Dashboard</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg-color: #0f172a;
+        --card-bg: rgba(30, 41, 59, 0.7);
+        --primary: #6366f1;
+        --primary-hover: #4f46e5;
+        --text-main: #f8fafc;
+        --text-muted: #94a3b8;
+        --danger: #ef4444;
+        --success: #10b981;
+        --border: rgba(255, 255, 255, 0.1);
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: "Inter", sans-serif;
+        background-color: var(--bg-color);
+        color: var(--text-main);
+        background-image: radial-gradient(
+            at 0% 0%,
+            rgba(99, 102, 241, 0.15) 0px,
+            transparent 50%
+          ),
+          radial-gradient(
+            at 100% 0%,
+            rgba(168, 85, 247, 0.15) 0px,
+            transparent 50%
+          );
+        min-height: 100vh;
+        padding: 2rem;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+
+      /* Header */
+      header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 3rem;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+      }
+
+      .brand h1 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        background: linear-gradient(to right, #818cf8, #c084fc);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      .refresh-btn {
+        background: var(--card-bg);
+        border: 1px solid var(--border);
+        color: var(--text-main);
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+
+      .refresh-btn:hover {
+        background: rgba(255, 255, 255, 0.1);
+      }
+
+      /* Grid de Configs */
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 1.5rem;
+      }
+
+      .card {
+        background: var(--card-bg);
+        backdrop-filter: blur(12px);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 1.5rem;
+        transition: transform 0.2s, box-shadow 0.2s;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+        border-color: rgba(99, 102, 241, 0.3);
+      }
+
+      .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: start;
+        margin-bottom: 1rem;
+      }
+
+      .card-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+      }
+      .card-target {
+        font-size: 0.85rem;
+        color: var(--text-muted);
+        display: block;
+        margin-top: 0.25rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      /* Status Badge */
+      .badge {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.75rem;
+        border-radius: 99px;
+        font-weight: 600;
+      }
+      .badge.active {
+        background: rgba(16, 185, 129, 0.2);
+        color: var(--success);
+      }
+      .badge.inactive {
+        background: rgba(148, 163, 184, 0.2);
+        color: var(--text-muted);
+      }
+
+      /* Rules List */
+      .rules {
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 8px;
+        padding: 1rem;
+        margin: 1rem 0;
+        font-size: 0.9rem;
+      }
+
+      .rule-item {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.5rem;
+      }
+      .rule-item:last-child {
+        margin-bottom: 0;
+      }
+      .rule-key {
+        color: var(--text-muted);
+      }
+      .rule-val {
+        font-family: monospace;
+        color: var(--primary);
+      }
+
+      /* Actions */
+      .actions {
+        display: flex;
+        gap: 0.5rem;
+        margin-top: 1rem;
+      }
+
+      .btn {
+        flex: 1;
+        padding: 0.6rem;
+        border: none;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+
+      .btn-primary {
+        background: var(--primary);
+        color: white;
+      }
+      .btn-primary:hover {
+        background: var(--primary-hover);
+      }
+
+      .btn-danger {
+        background: rgba(239, 68, 68, 0.2);
+        color: var(--danger);
+      }
+      .btn-danger:hover {
+        background: rgba(239, 68, 68, 0.3);
+      }
+
+      .btn-toggle {
+        background: var(--card-bg);
+        border: 1px solid var(--border);
+        color: var(--text-main);
+      }
+      .btn-toggle:hover {
+        border-color: var(--text-muted);
+      }
+
+      /* ID Copy */
+      .config-id {
+        font-family: monospace;
+        font-size: 0.8rem;
+        color: var(--text-muted);
+        background: rgba(0, 0, 0, 0.3);
+        padding: 0.4rem;
+        border-radius: 6px;
+        margin-top: 1rem;
+        cursor: pointer;
+        text-align: center;
+        border: 1px solid transparent;
+        transition: all 0.2s;
+      }
+      .config-id:hover {
+        border-color: var(--primary);
+        color: var(--text-main);
+      }
+
+      /* Modal */
+      .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.7);
+        backdrop-filter: blur(5px);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 100;
+      }
+      .modal {
+        background: #1e293b;
+        padding: 2rem;
+        border-radius: 16px;
+        width: 100%;
+        max-width: 500px;
+        border: 1px solid var(--border);
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      }
+      .form-group {
+        margin-bottom: 1rem;
+      }
+      .form-label {
+        display: block;
+        margin-bottom: 0.5rem;
+        color: var(--text-muted);
+        font-size: 0.9rem;
+      }
+      .form-input {
+        width: 100%;
+        padding: 0.75rem;
+        background: rgba(0, 0, 0, 0.2);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        color: white;
+        font-family: inherit;
+      }
+      .form-input:focus {
+        outline: none;
+        border-color: var(--primary);
+      }
+
+      /* FAB */
+      .fab {
+        position: fixed;
+        bottom: 2rem;
+        right: 2rem;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: var(--primary);
+        color: white;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 2rem;
+        box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.5);
+        cursor: pointer;
+        transition: transform 0.2s;
+        border: none;
+      }
+      .fab:hover {
+        transform: scale(1.1) rotate(90deg);
+      }
+
+      [v-cloak] {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app" v-cloak>
+      <header class="container">
+        <div class="brand">
+          <span style="font-size: 2rem">🌪️</span>
+          <div>
+            <h1>Antonio Chaos</h1>
+            <small style="color: var(--text-muted)">API Proxy Dashboard</small>
+          </div>
+        </div>
+        <button class="refresh-btn" @click="fetchConfigs">🔄 Refresh</button>
+      </header>
+
+      <main class="container">
+        <div
+          v-if="loading"
+          style="text-align: center; color: var(--text-muted)"
+        >
+          Cargando configuraciones...
+        </div>
+
+        <div v-else class="grid">
+          <div v-for="config in configs" :key="config.id" class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">{{ config.name || 'Sin Nombre' }}</div>
+                <span class="card-target">{{ config.target }}</span>
+              </div>
+              <span
+                class="badge"
+                :class="config.enabled ? 'active' : 'inactive'"
+              >
+                {{ config.enabled ? 'ACTIVO' : 'PAUSADO' }}
+              </span>
+            </div>
+
+            <div class="rules">
+              <div v-if="config.rules.latency_ms" class="rule-item">
+                <span class="rule-key">Latencia</span>
+                <span class="rule-val">{{ config.rules.latency_ms }}ms</span>
+              </div>
+              <div v-if="config.rules.jitter" class="rule-item">
+                <span class="rule-key">Jitter</span>
+                <span class="rule-val">±{{ config.rules.jitter }}ms</span>
+              </div>
+              <div v-if="config.rules.inject_failure_rate" class="rule-item">
+                <span class="rule-key">Tasa Error</span>
+                <span class="rule-val"
+                  >{{ (config.rules.inject_failure_rate * 100).toFixed(0)
+                  }}%</span
+                >
+              </div>
+              <div v-if="config.rules.error_code" class="rule-item">
+                <span class="rule-key">Código HTTP</span>
+                <span class="rule-val">{{ config.rules.error_code }}</span>
+              </div>
+              <div v-if="config.rules.bandwidth_limit_kbps" class="rule-item">
+                <span class="rule-key">Bandwidth</span>
+                <span class="rule-val"
+                  >{{ config.rules.bandwidth_limit_kbps }} KB/s</span
+                >
+              </div>
+            </div>
+
+            <div
+              class="config-id"
+              @click="copyId(config.id)"
+              title="Click para copiar"
+            >
+              {{ config.id }}
+            </div>
+
+            <div class="actions">
+              <button class="btn btn-toggle" @click="toggleConfig(config)">
+                {{ config.enabled ? '⏸️ Pausar' : '▶️ Activar' }}
+              </button>
+              <button class="btn btn-danger" @click="deleteConfig(config.id)">
+                🗑️
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div
+          v-if="!loading && configs.length === 0"
+          style="text-align: center; padding: 4rem; color: var(--text-muted)"
+        >
+          <h3>No hay configuraciones activas</h3>
+          <p>Crea una nueva regla de caos para empezar.</p>
+        </div>
+      </main>
+
+      <button class="fab" @click="showModal = true">+</button>
+
+      <!-- Modal Crear -->
+      <div
+        v-if="showModal"
+        class="modal-overlay"
+        @click.self="showModal = false"
+      >
+        <div class="modal">
+          <h2 style="margin-bottom: 1.5rem">Nueva Regla de Caos</h2>
+
+          <form @submit.prevent="createConfig">
+            <div class="form-group">
+              <label class="form-label">Nombre</label>
+              <input
+                v-model="newConfig.name"
+                class="form-input"
+                placeholder="Ej: Stripe Latency Test"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Target URL</label>
+              <input
+                v-model="newConfig.target"
+                class="form-input"
+                placeholder="https://api.stripe.com"
+                type="url"
+                required
+              />
+            </div>
+
+            <div
+              style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem"
+            >
+              <div class="form-group">
+                <label class="form-label">Latencia (ms)</label>
+                <input
+                  v-model.number="newConfig.rules.latency_ms"
+                  class="form-input"
+                  type="number"
+                />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Jitter (ms)</label>
+                <input
+                  v-model.number="newConfig.rules.jitter"
+                  class="form-input"
+                  type="number"
+                />
+              </div>
+            </div>
+
+            <div
+              style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem"
+            >
+              <div class="form-group">
+                <label class="form-label">Tasa Falla (0-1)</label>
+                <input
+                  v-model.number="newConfig.rules.inject_failure_rate"
+                  class="form-input"
+                  type="number"
+                  step="0.1"
+                  max="1"
+                  min="0"
+                />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Error Code</label>
+                <input
+                  v-model.number="newConfig.rules.error_code"
+                  class="form-input"
+                  type="number"
+                  placeholder="500"
+                />
+              </div>
+            </div>
+
+            <div class="actions" style="margin-top: 2rem">
+              <button
+                type="button"
+                class="btn btn-toggle"
+                @click="showModal = false"
+              >
+                Cancelar
+              </button>
+              <button type="submit" class="btn btn-primary">
+                Crear Caos 🌪️
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <script>
+        const { createApp } = Vue
+
+        createApp({
+            data() {
+                return {
+                    apiKey: localStorage.getItem('chaos_api_key') || '',
+                    configs: [],
+                    loading: true,
+                    error: null,
+                    showModal: false,
+                    newConfig: {
+                        name: '',
+                        target: '',
+                        enabled: true,
+                        rules: {
+                            latency_ms: 0,
+                            jitter: 0,
+                            inject_failure_rate: 0,
+                            error_code: 500
+                        }
+                    }
+                }
+            },
+            mounted() {
+                this.fetchConfigs()
+            },
+            methods: {
+                saveKey() {
+                    localStorage.setItem('chaos_api_key', this.apiKey)
+                    this.fetchConfigs()
+                },
+                getHeaders() {
+                    const headers = {'Content-Type': 'application/json'}
+                    if (this.apiKey) headers['X-API-Key'] = this.apiKey
+                    return headers
+                },
+                async fetchConfigs() {
+                    this.loading = true
+                    this.error = null
+                    try {
+                        const res = await fetch('/api/v1/configs', { headers: this.getHeaders() })
+                        if (res.status === 401) throw new Error('API Key inválida o faltante')
+                        if (!res.ok) throw new Error('Error de conexión')
+                        
+                        const data = await res.json()
+                        this.configs = data.configs || []
+                    } catch (e) {
+                        console.error(e)
+                        this.error = e.message
+                    } finally {
+                        this.loading = false
+                    }
+                },
+                async toggleConfig(config) {
+                    try {
+                        const res = await fetch(`/api/v1/configs/${config.id}`, {
+                            method: 'PUT',
+                            headers: this.getHeaders(),
+                            body: JSON.stringify({ enabled: !config.enabled })
+                        })
+                        if (!res.ok) throw new Error()
+                        config.enabled = !config.enabled
+                    } catch (e) {
+                        alert('Error actualizando config (¿API Key correcta?)')
+                    }
+                },
+                async deleteConfig(id) {
+                    if(!confirm('¿Eliminar esta regla?')) return
+                    try {
+                        const res = await fetch(`/api/v1/configs/${id}`, { 
+                            method: 'DELETE',
+                            headers: this.getHeaders()
+                        })
+                        if (!res.ok) throw new Error()
+                        this.configs = this.configs.filter(c => c.id !== id)
+                    } catch (e) {
+                        alert('Error eliminando (¿API Key correcta?)')
+                    }
+                },
+                async createConfig() {
+                    try {
+                        const payload = {...this.newConfig}
+                        if (!payload.rules.error_code) delete payload.rules.error_code
+                        
+                        const res = await fetch('/api/v1/configs', {
+                            method: 'POST',
+                            headers: this.getHeaders(),
+                            body: JSON.stringify(payload)
+                        })
+                        
+                        if (!res.ok) throw new Error()
+                        
+                        this.showModal = false
+                        this.newConfig = { name: '', target: '', enabled: true, rules: { latency_ms: 0, jitter: 0, inject_failure_rate: 0, error_code: 500 } }
+                        this.fetchConfigs()
+                    } catch (e) {
+                        alert('Error creando caos (¿API Key correcta?)')
+                    }
+                },
+                async copyId(id) {
+                    try {
+                        await navigator.clipboard.writeText(id)
+                        alert('ID copiado: ' + id)
+                    } catch(e) {
+                        prompt("Copia el ID:", id)
+                    }
+                }
+            }
+        }).mount('#app')
+    </script>
+  </body>
+</html>

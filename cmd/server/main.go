@@ -11,34 +11,36 @@ import (
 
 	"github.com/medalcode/chaos-api-proxy/internal/config"
 	"github.com/medalcode/chaos-api-proxy/internal/handler"
+	"github.com/medalcode/chaos-api-proxy/internal/middleware"
 	"github.com/medalcode/chaos-api-proxy/internal/storage"
+	"github.com/medalcode/chaos-api-proxy/internal/ui"
 	"github.com/gorilla/mux"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	log "github.com/sirupsen/logrus"
 )
 
 func main() {
-	// Initialize logger
+	// ... (logger setup) ...
 	log.SetFormatter(&log.JSONFormatter{})
 	log.SetOutput(os.Stdout)
 	log.SetLevel(log.InfoLevel)
 
 	log.Info("Starting Chaos API Proxy...")
 
-	// Load configuration
+    // ... (config load) ...
 	cfg, err := config.Load()
 	if err != nil {
 		log.Fatalf("Failed to load configuration: %v", err)
 	}
 
-	// Initialize Redis storage
+    // ... (redis setup) ...
 	store, err := storage.NewRedisStorage(cfg.RedisAddr, cfg.RedisPassword, cfg.RedisDB)
 	if err != nil {
 		log.Fatalf("Failed to connect to Redis: %v", err)
 	}
 	defer store.Close()
 
-	// Test Redis connection
+    // ... (redis test) ...
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	if err := store.Ping(ctx); err != nil {
@@ -49,6 +51,13 @@ func main() {
 	// Initialize handlers
 	proxyHandler := handler.NewProxyHandler(store)
 	configHandler := handler.NewConfigHandler(store)
+	authMiddleware := middleware.NewAuthMiddleware(cfg.APIKeys)
+	
+	if cfg.APIKeys != "" {
+		log.Info("🔐 Authentication enabled for Admin API")
+	} else {
+		log.Warn("⚠️  Authentication DISABLED. Set CHAOS_API_KEYS environment variable to secure the Admin API.")
+	}
 
 	// Setup router
 	router := mux.NewRouter()
@@ -62,20 +71,41 @@ func main() {
 	// Metrics endpoint
 	router.Handle("/metrics", promhttp.Handler()).Methods("GET")
 
-	// Config management API
+    // UI Dashboard
+    router.PathPrefix("/dashboard").Handler(http.StripPrefix("/dashboard", ui.Handler()))
+    
+    // Redirect root to dashboard (if it's not a proxy request via header)
+    // NOTE: This conflicts with the catch-all proxy if not careful.
+    // The main proxy logic uses PathPrefix("/") at the end.
+    // We will let the proxy handler decide if it shows dashboard or proxies based on headers/path.
+    // For now, access via /dashboard directly.
+
+	// Config management API (Protected)
 	api := router.PathPrefix("/api/v1").Subrouter()
+	api.Use(authMiddleware.Handler)
 	api.HandleFunc("/configs", configHandler.CreateConfig).Methods("POST")
 	api.HandleFunc("/configs", configHandler.ListConfigs).Methods("GET")
 	api.HandleFunc("/configs/{id}", configHandler.GetConfig).Methods("GET")
 	api.HandleFunc("/configs/{id}", configHandler.UpdateConfig).Methods("PUT")
 	api.HandleFunc("/configs/{id}", configHandler.DeleteConfig).Methods("DELETE")
 
-	// Alias endpoints for compatibility with original spec
-	router.HandleFunc("/rules", configHandler.CreateConfig).Methods("POST")
-	router.HandleFunc("/rules", configHandler.ListConfigs).Methods("GET")
-	router.HandleFunc("/rules/{id}", configHandler.GetConfig).Methods("GET")
-	router.HandleFunc("/rules/{id}", configHandler.UpdateConfig).Methods("PUT")
-	router.HandleFunc("/rules/{id}", configHandler.DeleteConfig).Methods("DELETE")
+	// Alias endpoints (Protected)
+	// Note: We need a subrouter or wrap individually to apply middleware only here
+	// and not to global router if we added it globally.
+	// Let's create a subrouter for /rules logic manually or just wrap them.
+	// Since /rules is root level, we can't easily use PathPrefix for just /rules without capturing others.
+	// Easiest is to wrap the handler functions or use a matcher.
+	
+	// Better approach:
+	rulesRouter := router.PathPrefix("/rules").Subrouter()
+	rulesRouter.Use(authMiddleware.Handler)
+	// Note: PathPrefix("/rules") captures /rules AND /rules/foo
+	// We need to match exact paths inside the subrouter now.
+	rulesRouter.HandleFunc("", configHandler.CreateConfig).Methods("POST")
+	rulesRouter.HandleFunc("", configHandler.ListConfigs).Methods("GET")
+	rulesRouter.HandleFunc("/{id}", configHandler.GetConfig).Methods("GET")
+	rulesRouter.HandleFunc("/{id}", configHandler.UpdateConfig).Methods("PUT")
+	rulesRouter.HandleFunc("/{id}", configHandler.DeleteConfig).Methods("DELETE")
 
 	// Proxy endpoint - path-based routing
 	// Format: /proxy/{configID}/{path:.*}

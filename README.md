@@ -264,14 +264,21 @@ fetch(url).then((res) => {
 });
 ```
 
+## 🖥️ Web Dashboard
+
+Gestiona tus reglas visualmente en: `http://localhost:8081/dashboard`
+
+![Dashboard Preview](docs/assets/dashboard-preview.png) (Ver `docs/DASHBOARD_AND_SECURITY.md`)
+
+## 🔐 Seguridad
+
+Puedes proteger la API de administración con API Keys usando `CHAOS_API_KEYS`.
+Ver guía detallada en [docs/DASHBOARD_AND_SECURITY.md](docs/DASHBOARD_AND_SECURITY.md).
+
 ## 📊 Observabilidad (Prometheus)
 
 El proxy expone métricas detalladas en `/metrics`.
-
-- **Métricas**: `http://localhost:8081/metrics`
-- **Prometheus UI**: `http://localhost:9090`
-
-Consulta la [Guía de Métricas](docs/METRICS.md) para detalles sobre contadores de tráfico, histogramas de latencia y monitoreo de inyección de caos.
+Consulta la [Guía de Métricas](docs/METRICS.md).
 
 ## 🛠️ Development
 

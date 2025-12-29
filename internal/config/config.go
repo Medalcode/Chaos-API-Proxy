@@ -5,12 +5,13 @@ import (
 	"strconv"
 )
 
-// Config holds the application configuration
+// Config holds configuration parameters
 type Config struct {
 	Port          int
 	RedisAddr     string
 	RedisPassword string
 	RedisDB       int
+	APIKeys       string // Comma separated keys
 }
 
 // Load reads configuration from environment variables
@@ -34,6 +35,7 @@ func Load() (*Config, error) {
 		RedisAddr:     getEnv("REDIS_ADDR", "localhost:6379"),
 		RedisPassword: getEnv("REDIS_PASSWORD", ""),
 		RedisDB:       redisDB,
+		APIKeys:       getEnv("CHAOS_API_KEYS", ""),
 	}, nil
 }
 
