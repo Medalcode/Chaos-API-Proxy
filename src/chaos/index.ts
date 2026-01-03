@@ -1,6 +1,7 @@
 import { ChaosRules } from '../models/types';
+import { scriptEngine } from './scripting';
 
-interface ChaosDecision {
+export interface ChaosDecision {
   shouldLatency: boolean;
   latencyMs: number;
   shouldError: boolean;
@@ -11,7 +12,7 @@ interface ChaosDecision {
 }
 
 export class ChaosEngine {
-  decide(rules: ChaosRules): ChaosDecision {
+  decide(rules: ChaosRules, req?: any): ChaosDecision {
     const decision: ChaosDecision = {
       shouldLatency: false,
       latencyMs: 0,
@@ -26,7 +27,7 @@ export class ChaosEngine {
       decision.shouldError = true;
       decision.errorCode = rules.error_code || 500;
       decision.errorBody = rules.error_body || '{"error": "Chaos Engineering: Injected failure"}';
-      return decision; // Stop processing if error
+      // Don't return yet, script might want to override
     }
 
     // 2. Latency Injection
@@ -45,6 +46,11 @@ export class ChaosEngine {
       if (Math.random() < rules.response_fuzzing.probability) {
         decision.shouldFuzz = true;
       }
+    }
+
+    // 4. Dynamic Scripting (The God Mode)
+    if (rules.script && req) {
+        scriptEngine.execute(rules.script, { req, decision });
     }
 
     return decision;

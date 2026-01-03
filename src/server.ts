@@ -93,7 +93,7 @@ app.use(async (req, res, next) => {
         }
 
         // Make Chaos Decision
-        const decision = chaosEngine.decide(cfg.rules);
+        const decision = chaosEngine.decide(cfg.rules, req);
         const chaosType = decision.shouldError ? 'error' : (decision.shouldLatency ? 'latency' : 'none');
 
         // Store for logging in onFinish

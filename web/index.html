@@ -560,6 +560,26 @@
                         </div>
                     </div>
 
+                    <div style="margin-top: 1rem; border-top: 1px solid var(--border); padding-top: 1rem;">
+                        <details>
+                            <summary style="cursor: pointer; color: var(--text-muted); font-size: 0.9rem;">
+                                📜 Advanced: Dynamic Scripting (JS)
+                            </summary>
+                            <div style="margin-top: 0.5rem;">
+                                <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem;">
+                                    Disponible: <code>req.method</code>, <code>req.path</code>, <code>req.headers</code>, <code>req.query</code>, <code>decision</code>.
+                                </p>
+                                <textarea v-model="newConfig.rules.script" class="form-input" rows="5" 
+                                          style="font-family: monospace; font-size: 0.8rem;" 
+                                          placeholder="// Example:
+if (req.method === 'POST') {
+  decision.shouldLatency = true;
+  decision.latencyMs = 2000;
+}"></textarea>
+                            </div>
+                        </details>
+                    </div>
+
             <div class="actions" style="margin-top: 2rem">
               <button
                 type="button"
@@ -598,6 +618,7 @@
                             jitter: 0,
                             inject_failure_rate: 0,
                             error_code: 500,
+                            script: '', // Scripting field
                             response_fuzzing: {
                                 enabled: false,
                                 probability: 0.5,

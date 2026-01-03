@@ -13,6 +13,7 @@ export interface ChaosRules {
   };
   modify_headers?: Record<string, string>;
   remove_headers?: string[];
+  script?: string; // Custom JS logic: (context) => void
 }
 
 export interface ChaosConfig {
