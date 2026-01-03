@@ -1,0 +1,57 @@
+version: "3.8"
+
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: chaos-proxy-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    networks:
+      - chaos-network
+
+  chaos-proxy:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: chaos-api-proxy
+    ports:
+      - "8081:8081"
+    environment:
+      - PORT=8081
+      - REDIS_ADDR=redis:6379
+      - REDIS_PASSWORD=
+      - REDIS_DB=0
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - chaos-network
+    restart: unless-stopped
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: chaos-proxy-prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    networks:
+      - chaos-network
+
+volumes:
+  redis-data:
+    driver: local
+
+networks:
+  chaos-network:
+    driver: bridge

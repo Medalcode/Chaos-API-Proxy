@@ -1,37 +1,18 @@
-# Build stage
-FROM golang:1.21-alpine AS builder
-
-# Install build dependencies
-RUN apk add --no-cache git
-
-# Set working directory
-WORKDIR /build
-
-# Copy go mod files
-COPY go.mod go.sum ./
-
-# Download dependencies
-RUN go mod download
-
-# Copy source code
-COPY . .
-
-# Build the application
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o chaos-api-proxy ./cmd/server
-
-# Final stage
-FROM alpine:latest
-
-# Install ca-certificates for HTTPS requests
-RUN apk --no-cache add ca-certificates
-
+FROM node:18-alpine
 WORKDIR /app
 
-# Copy binary from builder
-COPY --from=builder /build/chaos-api-proxy .
+# Install dependencies
+COPY package*.json ./
+RUN npm install
+
+# Copy source
+COPY . .
+
+# Build TypeScript
+RUN npm run build
 
 # Expose port
 EXPOSE 8081
 
-# Run the application
-CMD ["./chaos-api-proxy"]
+# Start
+CMD ["npm", "start"]
